@@ -1,26 +1,50 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Anagram {
-	//並び替えた単語の辞書,元の辞書
-	static HashMap<String, String> dictionary = new HashMap<String, String>();
-	//並び替えた単語をアルファベット順にソートした配列
-	static String[] sortArray;
+	//元の辞書
+	static List<String> dictionary = new ArrayList<String>();
+	//アルファベットを並び替えた辞書
+	static List<String> sortDictionary = new ArrayList<String>();
+	//問題の組み合わせをSetで表現
+	static List<String> questions = new ArrayList<>();
 
 	public static void main(String[] args) {
+		power_set(args);
+		//System.out.println(questions.get(30));
+		/*
 		String question = "";
 		for (String word : args)
 			question += word;
 		System.out.println(question);
 		question = insertSort(question);
 		System.out.println(question);
+		*/
 		readFile();
-		int index = binarySearch(question, 0, sortArray.length);
-		System.out.println((index >= 0) ? dictionary.get(sortArray[index]) : "No Word!");
+		//System.out.println(dictionary.get(0));
+		//System.out.println(dictionary.get(1));
+		int index = -1;
+		for (String word : sortDictionary) {
+			for (String question : questions) {
+				question = insertSort(question);
+				//System.out.println(question);
+				if (word.equals(question)) {
+					//一致したら抜ける
+					index = sortDictionary.indexOf(word);
+					break;
+				}
+			}
+
+		}
+		System.out.println((index >= 0) ? dictionary.get(index) : "No Word!");
+
 	}
 
 	//参照のコピーが渡るので注意が必要
@@ -42,29 +66,13 @@ public class Anagram {
 		return new String(chars);
 	}
 
-	static void insertSort() {
-		for (int i = 1; i < sortArray.length; i++) {
-			int j = i;
-			while (j >= 1 && sortArray[j - 1].compareTo(sortArray[j]) > 0) {
-				//swapする
-				swap(j - 1, j);
-				j--;
-			}
-		}
-	}
-
 	static void swap(char[] chars, int i, int j) {
 		char tmp = chars[i];
 		chars[i] = chars[j];
 		chars[j] = tmp;
 	}
 
-	static void swap(int i, int j) {
-		String tmp = sortArray[i];
-		sortArray[i] = sortArray[j];
-		sortArray[j] = tmp;
-	}
-
+	//Hashを使うと二分探索がやりにくいのでリストにした(Hashの順番でリストができてしまった)
 	static void readFile() {
 		try {
 			//dictionaryファイルを指定
@@ -74,13 +82,9 @@ public class Anagram {
 			String word;
 			//nullまで読み込む
 			while ((word = bufferedReader.readLine()) != null) {
-				dictionary.put(insertSort(word), word);
+				dictionary.add(word);
+				sortDictionary.add(insertSort(word));
 			}
-
-			//辞書の単語をアルファベット順に並び替えたものをさらにアルファベット順にソート
-			sortArray = new String[dictionary.size()];
-			dictionary.keySet().toArray(sortArray);
-			insertSort();
 			//リソースの開放
 			bufferedReader.close();
 			//ファイルが見つからなければエラー
@@ -90,12 +94,12 @@ public class Anagram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		/*
+
 		//debug用にoutputStreamに書き込み
 		try {
 			File file = new File("src/sortDictionary.txt");
 			BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(file));
-			for (String word : sortArray) {
+			for (String word : sortDictionary) {
 				bufferWriter.write(word);
 				//改行コードをOS似合わせて自動で判断して出力
 				bufferWriter.newLine();
@@ -108,20 +112,18 @@ public class Anagram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		*/
 	}
-		static int binarySearch(String question, int left, int right) {
-			if (left >= right)
-				return -1;
-			int mid = (left + right) / 2;
-			int compare = question.compareTo(sortArray[mid]);
-//			System.out.println(mid+"");
-//			System.out.println(sortArray[mid]);
-			if (compare == 0)
-				return mid;
-			else if (compare > 0)
-				return binarySearch(question, mid + 1, right);
-			else
-				return binarySearch(question, left, mid);
+
+	//べき集合を作る
+	//0 -> 0 01 -> 0 01 02 012 -> 0 01 02 012 03 013 023 0123
+	static void power_set(String args[]) {
+		//参照渡しではなくディープコピーしたい
+		questions.add("");
+		for (String alphabet : args) {
+			List<String> cpQuestion = new ArrayList<String>(questions);
+			for (String word : cpQuestion) {
+				questions.add(word + alphabet);
+			}
 		}
+	}
 }
