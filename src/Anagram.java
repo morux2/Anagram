@@ -1,12 +1,11 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Anagram {
 	//アルファベットを並び替えた辞書
@@ -15,30 +14,36 @@ public class Anagram {
 	static List<String> questions = new ArrayList<>();
 
 	public static void main(String[] args) {
-		//引数にとった文字をアルファベット順にする
-		insertSort(args);
-		//べき集合を作る(アルファベット順に保管されている)
-		power_set(args);
-		descend();
-		System.out.println(questions.get(0));
+		//辞書の用意(スコアでソートされている)
 		readFile();
-		System.out.println(sortDictionary.get(0).sortWord);
-		//System.out.println(dictionary.get(1));
-		MyString answer = null;
-		//ラベル付きbreak文で抜ける
-		exit: {
-			for (String question : questions) {
+		//問題はscannerから入力する
+		Scanner scanner = new Scanner(System.in);
+		//Cntl+Dで終了
+		while (scanner.hasNext()) {
+			String input = scanner.nextLine();
+			//単語をアルファベット順に並び替え
+			input = insertSort(input);
+			//べき集合を作る(アルファベット順に保管されている)
+			power_set(input);
+			//組み合わせをある程度の精度で並び替え
+			descend();
+			MyString answer = null;
+			//ラベル付きbreak文で抜ける
+			exit: {
 				for (MyString myString : sortDictionary) {
-					if (myString.sortWord.equals(question)) {
-						answer = myString;
-						//一致したら抜ける
-						break exit;
+					for (String question : questions) {
+						if (myString.sortWord.equals(question)) {
+							answer = myString;
+							//一致したら抜ける
+							break exit;
+						}
 					}
 				}
 			}
+			System.out.println(answer.sortWord);
+			System.out.println(answer.originalWord);
 		}
-		System.out.println(answer.sortWord);
-		System.out.println(answer.originalWord);
+		scanner.close();
 	}
 
 	//immutableなので新しい場所に作られるので参照を戻り値で返す必要がある
@@ -64,21 +69,6 @@ public class Anagram {
 			}
 		}
 		return new String(chars);
-	}
-
-	static void insertSort(String[] args) {
-		//拡張for文は一度変数に要素のコピーをとって実行しているイメージなので初期化などはできないので注意
-		for (int i = 0; i < args.length; i++) {
-			args[i] = fixCharacter(args[i]);
-		}
-		for (int i = 1; i < args.length; i++) {
-			int j = i;
-			while (j >= 1 && args[j - 1].compareTo(args[j]) > 0) {
-				//swapする
-				swap(args, j - 1, j);
-				j--;
-			}
-		}
 	}
 
 	static void swap(char[] chars, int i, int j) {
@@ -127,6 +117,7 @@ public class Anagram {
 		}
 		//score順が高い順にソート
 		scoreQuickSort(0, sortDictionary.size() - 1);
+		/*
 		//debug用にoutputStreamに書き込み
 		try {
 			File file = new File("src/sortDictionary.txt");
@@ -144,14 +135,18 @@ public class Anagram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	//べき集合を作る
 	//0 -> 0 01 -> 0 01 02 012 -> 0 01 02 012 03 013 023 0123
-	static void power_set(String args[]) {
-		//参照渡しではなくディープコピーしたい
+	static void power_set(String question) {
+		//一度要素をクリア
+		questions.clear();
+		char[] chars = question.toCharArray();
 		questions.add("");
-		for (String alphabet : args) {
+		for (char alphabet : chars) {
+			//参照渡しではなくディープコピーしたい
 			List<String> cpQuestion = new ArrayList<String>(questions);
 			for (String word : cpQuestion) {
 				questions.add(word + alphabet);
