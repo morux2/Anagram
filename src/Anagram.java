@@ -1,5 +1,14 @@
-public class Anagram {
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+public class Anagram {
 	public static void main(String[] args) {
 		String question = "";
 		for (String word : args)
@@ -7,6 +16,11 @@ public class Anagram {
 		System.out.println(question);
 		question = insertSort(question);
 		System.out.println(question);
+		System.out.println(question);
+		List<String> dictionary = readFile();
+		System.out.println(dictionary.get(0));
+		System.out.println(dictionary.get(1));
+
 	}
 
 	//参照のコピーが渡るので注意が必要
@@ -32,5 +46,48 @@ public class Anagram {
 		char tmp = chars[i];
 		chars[i] = chars[j];
 		chars[j] = tmp;
+	}
+
+	static List<String> readFile() {
+		//長さ不定の配列
+		List<String> dictionary = new ArrayList<String>();
+		try {
+			//dictionaryファイルを指定
+			File file = new File("src/dictionary.txt");
+			//FileReaderは1文字ずつ, BufferReaderは1行ずつ
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+			String word;
+			//nullまで読み込む
+			while ((word = bufferedReader.readLine()) != null) {
+				word = insertSort(word);
+				dictionary.add(word);
+			}
+			//リソースの開放
+			bufferedReader.close();
+			//ファイルが見つからなければエラー
+		} catch (FileNotFoundException e) {
+			System.out.println(e);
+			//readLineでエラーが出た時
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//debug用にoutputStreamに書き込み
+		try {
+			File file = new File("src/sortDictionary.txt");
+			BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(file));
+			for (String word : dictionary) {
+				bufferWriter.write(word);
+				//改行コードをOS似合わせて自動で判断して出力
+				bufferWriter.newLine();
+			}
+			bufferWriter.close();
+			//ファイルが見つからなければエラー
+		} catch (FileNotFoundException e) {
+			System.out.println(e);
+			//writeでエラーが出た時
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return dictionary;
 	}
 }
