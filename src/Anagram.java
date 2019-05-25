@@ -1,14 +1,17 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Anagram {
+	//元の辞書
+	static List<String> dictionary = new ArrayList<String>();
+	//アルファベットを並び替えた辞書
+	static List<String> sortDictionary = new ArrayList<String>();
+
 	public static void main(String[] args) {
 		String question = "";
 		for (String word : args)
@@ -16,11 +19,18 @@ public class Anagram {
 		System.out.println(question);
 		question = insertSort(question);
 		System.out.println(question);
-		System.out.println(question);
-		List<String> dictionary = readFile();
-		System.out.println(dictionary.get(0));
-		System.out.println(dictionary.get(1));
-
+		readFile();
+		//System.out.println(dictionary.get(0));
+		//System.out.println(dictionary.get(1));
+		int index = -1;
+		for (String word : sortDictionary) {
+			if (word.equals(question)) {
+				//一致したら抜ける
+				index = sortDictionary.indexOf(word);
+				break;
+			}
+		}
+		System.out.println((index >= 0) ? dictionary.get(index) : "No Word!");
 	}
 
 	//参照のコピーが渡るので注意が必要
@@ -48,9 +58,8 @@ public class Anagram {
 		chars[j] = tmp;
 	}
 
-	static List<String> readFile() {
-		//長さ不定の配列
-		List<String> dictionary = new ArrayList<String>();
+	//Hashを使うと二分探索がやりにくいのでリストにした(Hashの順番でリストができてしまった)
+	static void readFile() {
 		try {
 			//dictionaryファイルを指定
 			File file = new File("src/dictionary.txt");
@@ -59,8 +68,8 @@ public class Anagram {
 			String word;
 			//nullまで読み込む
 			while ((word = bufferedReader.readLine()) != null) {
-				word = insertSort(word);
 				dictionary.add(word);
+				sortDictionary.add(insertSort(word));
 			}
 			//リソースの開放
 			bufferedReader.close();
@@ -71,11 +80,12 @@ public class Anagram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		/*
 		//debug用にoutputStreamに書き込み
 		try {
 			File file = new File("src/sortDictionary.txt");
 			BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(file));
-			for (String word : dictionary) {
+			for (String word : sortDictionary) {
 				bufferWriter.write(word);
 				//改行コードをOS似合わせて自動で判断して出力
 				bufferWriter.newLine();
@@ -88,6 +98,6 @@ public class Anagram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return dictionary;
+		*/
 	}
 }
