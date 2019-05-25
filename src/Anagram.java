@@ -3,14 +3,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class Anagram {
-	//元の辞書
-	static List<String> dictionary = new ArrayList<String>();
-	//アルファベットを並び替えた辞書
-	static List<String> sortDictionary = new ArrayList<String>();
+	//並び替えた単語の辞書,元の辞書
+	static HashMap<String, String> dictionary = new HashMap<String, String>();
+	//並び替えた単語をアルファベット順にソートした配列
+	static String[] sortArray;
 
 	public static void main(String[] args) {
 		String question = "";
@@ -20,17 +19,8 @@ public class Anagram {
 		question = insertSort(question);
 		System.out.println(question);
 		readFile();
-		//System.out.println(dictionary.get(0));
-		//System.out.println(dictionary.get(1));
-		int index = -1;
-		for (String word : sortDictionary) {
-			if (word.equals(question)) {
-				//一致したら抜ける
-				index = sortDictionary.indexOf(word);
-				break;
-			}
-		}
-		System.out.println((index >= 0) ? dictionary.get(index) : "No Word!");
+		int index = binarySearch(question, 0, sortArray.length);
+		System.out.println((index >= 0) ? dictionary.get(sortArray[index]) : "No Word!");
 	}
 
 	//参照のコピーが渡るので注意が必要
@@ -52,13 +42,29 @@ public class Anagram {
 		return new String(chars);
 	}
 
+	static void insertSort() {
+		for (int i = 1; i < sortArray.length; i++) {
+			int j = i;
+			while (j >= 1 && sortArray[j - 1].compareTo(sortArray[j]) > 0) {
+				//swapする
+				swap(j - 1, j);
+				j--;
+			}
+		}
+	}
+
 	static void swap(char[] chars, int i, int j) {
 		char tmp = chars[i];
 		chars[i] = chars[j];
 		chars[j] = tmp;
 	}
 
-	//Hashを使うと二分探索がやりにくいのでリストにした(Hashの順番でリストができてしまった)
+	static void swap(int i, int j) {
+		String tmp = sortArray[i];
+		sortArray[i] = sortArray[j];
+		sortArray[j] = tmp;
+	}
+
 	static void readFile() {
 		try {
 			//dictionaryファイルを指定
@@ -68,9 +74,13 @@ public class Anagram {
 			String word;
 			//nullまで読み込む
 			while ((word = bufferedReader.readLine()) != null) {
-				dictionary.add(word);
-				sortDictionary.add(insertSort(word));
+				dictionary.put(insertSort(word), word);
 			}
+
+			//辞書の単語をアルファベット順に並び替えたものをさらにアルファベット順にソート
+			sortArray = new String[dictionary.size()];
+			dictionary.keySet().toArray(sortArray);
+			insertSort();
 			//リソースの開放
 			bufferedReader.close();
 			//ファイルが見つからなければエラー
@@ -85,7 +95,7 @@ public class Anagram {
 		try {
 			File file = new File("src/sortDictionary.txt");
 			BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(file));
-			for (String word : sortDictionary) {
+			for (String word : sortArray) {
 				bufferWriter.write(word);
 				//改行コードをOS似合わせて自動で判断して出力
 				bufferWriter.newLine();
@@ -100,4 +110,18 @@ public class Anagram {
 		}
 		*/
 	}
+		static int binarySearch(String question, int left, int right) {
+			if (left >= right)
+				return -1;
+			int mid = (left + right) / 2;
+			int compare = question.compareTo(sortArray[mid]);
+//			System.out.println(mid+"");
+//			System.out.println(sortArray[mid]);
+			if (compare == 0)
+				return mid;
+			else if (compare > 0)
+				return binarySearch(question, mid + 1, right);
+			else
+				return binarySearch(question, left, mid);
+		}
 }
