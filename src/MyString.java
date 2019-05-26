@@ -12,6 +12,11 @@ public class MyString {
 		this.sortWord = sortWord;
 	}
 
+	public MyString(String sortWord) {
+		score = calculate(sortWord);
+		this.sortWord = sortWord;
+	}
+
 	static int calculate(String target) {
 		int score = 0;
 		while (target.length() > 0) {

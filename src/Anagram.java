@@ -11,7 +11,7 @@ public class Anagram {
 	//アルファベットを並び替えた辞書
 	static List<MyString> sortDictionary = new ArrayList<MyString>();
 	//問題の組み合わせをListで表現
-	static List<String> questions = new ArrayList<>();
+	static List<MyString> questions = new ArrayList<>();
 
 	public static void main(String[] args) {
 		//辞書の用意(スコアでソートされている)
@@ -25,25 +25,51 @@ public class Anagram {
 			input = insertSort(input);
 			//べき集合を作る(アルファベット順に保管されている)
 			power_set(input);
-			//組み合わせをある程度の精度で並び替え
-			descend();
+			//スコアで全部のタイプをソート
+			scoreQuickSort(questions, 0, questions.size() - 1);
 			MyString answer = null;
 			//ラベル付きbreak文で抜ける
 			exit: {
-				for (MyString myString : sortDictionary) {
-					for (String question : questions) {
-						if (myString.sortWord.equals(question)) {
-							answer = myString;
+				for (MyString question : questions) {
+					//questionのscoreより1大きいところまでざっくり進む、こうしないと通り過ぎてしまうことがある
+					int start = binarySearch(question.score + 1, 0, sortDictionary.size() - 1);
+					if (start == -1)
+						continue;
+					for (int i = start; i < sortDictionary
+							.size(); i++) {
+						MyString dictionary = sortDictionary.get(i);
+						if (question.score > dictionary.score)
+							break;
+						if (dictionary.sortWord.equals(question.sortWord)) {
+							answer = dictionary;
 							//一致したら抜ける
 							break exit;
 						}
 					}
 				}
 			}
-			System.out.println(answer.sortWord);
-			System.out.println(answer.originalWord);
+			if (answer == null) {
+				System.out.println("not found");
+			} else {
+				System.out.println(answer.sortWord);
+				System.out.println(answer.originalWord);
+			}
 		}
 		scanner.close();
+	}
+
+	static int binarySearch(int target, int left, int right) {
+		if (left >= right)
+			return -1;
+		int mid = (left + right) / 2;
+		int midScore = sortDictionary.get(mid).score;
+		//System.out.println(left + " " + right + " " + mid + " " + midScore);
+		if (target == midScore)
+			return mid;
+		else if (target < midScore)
+			return binarySearch(target, mid + 1, right);
+		else
+			return binarySearch(target, left, mid);
 	}
 
 	//immutableなので新しい場所に作られるので参照を戻り値で返す必要がある
@@ -77,22 +103,10 @@ public class Anagram {
 		chars[j] = tmp;
 	}
 
-	static void swap(String[] args, int i, int j) {
-		String tmp = args[i];
-		args[i] = args[j];
-		args[j] = tmp;
-	}
-
-	static void qSwap(int i, int j) {
-		String tmp = questions.get(i);
-		questions.set(i, questions.get(j));
-		questions.set(j, tmp);
-	}
-
-	static void dSwap(int i, int j) {
-		MyString tmp = sortDictionary.get(i);
-		sortDictionary.set(i, sortDictionary.get(j));
-		sortDictionary.set(j, tmp);
+	static void swap(List<MyString> target, int i, int j) {
+		MyString tmp = target.get(i);
+		target.set(i, target.get(j));
+		target.set(j, tmp);
 	}
 
 	static void readFile() {
@@ -115,8 +129,8 @@ public class Anagram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//score順が高い順にソート
-		scoreQuickSort(0, sortDictionary.size() - 1);
+		//辞書をscore順が高い順にソート
+		scoreQuickSort(sortDictionary, 0, sortDictionary.size() - 1);
 		/*
 		//debug用にoutputStreamに書き込み
 		try {
@@ -144,46 +158,37 @@ public class Anagram {
 		//一度要素をクリア
 		questions.clear();
 		char[] chars = question.toCharArray();
-		questions.add("");
+		questions.add(new MyString(""));
 		for (char alphabet : chars) {
 			//参照渡しではなくディープコピーしたい
-			List<String> cpQuestion = new ArrayList<String>(questions);
-			for (String word : cpQuestion) {
-				questions.add(word + alphabet);
+			List<MyString> cpQuestion = new ArrayList<MyString>(questions);
+			for (MyString word : cpQuestion) {
+				MyString myString = new MyString("");
+				questions.add(new MyString(word.sortWord + alphabet));
 			}
 		}
 	}
 
-	//questionsを長さが長いものからざっくり並べたい
-	static void descend() {
-		int size = questions.size();
-		int i = 0;
-		while (i < size - (i + 1)) {
-			qSwap(i, size - (i + 1));
-			i++;
-		}
-	}
-
-	static void scoreQuickSort(int left, int right) {
+	static void scoreQuickSort(List<MyString> target, int left, int right) {
 		int i, j;
 		int pivot;
 		if (left >= right)
 			return;
 		i = left;
 		j = right;
-		pivot = sortDictionary.get((left + right) / 2).score;
+		pivot = target.get((left + right) / 2).score;
 		do {
-			while (pivot < sortDictionary.get(i).score)
+			while (pivot < target.get(i).score)
 				i++;
-			while (pivot > sortDictionary.get(j).score)
+			while (pivot > target.get(j).score)
 				j--;
 			if (i <= j) {
-				dSwap(i, j);
+				swap(target, i, j);
 				i++;
 				j--;
 			}
 		} while (i <= j);
-		scoreQuickSort(left, j);
-		scoreQuickSort(i, right);
+		scoreQuickSort(target, left, j);
+		scoreQuickSort(target, i, right);
 	}
 }
