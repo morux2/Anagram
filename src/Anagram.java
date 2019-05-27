@@ -163,7 +163,6 @@ public class Anagram {
 			//参照渡しではなくディープコピーしたい
 			List<MyString> cpQuestion = new ArrayList<MyString>(questions);
 			for (MyString word : cpQuestion) {
-				MyString myString = new MyString("");
 				questions.add(new MyString(word.sortWord + alphabet));
 			}
 		}
