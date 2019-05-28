@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -26,7 +27,7 @@ public class Anagram {
 			//べき集合を作る(アルファベット順に保管されている)
 			power_set(input);
 			//スコアで全部のタイプをソート
-			scoreQuickSort(questions, 0, questions.size() - 1);
+			questions.sort(Comparator.comparing(MyString::getScore).reversed());
 			MyString answer = null;
 			//ラベル付きbreak文で抜ける
 			exit: {
@@ -130,7 +131,7 @@ public class Anagram {
 			e.printStackTrace();
 		}
 		//辞書をscore順が高い順にソート
-		scoreQuickSort(sortDictionary, 0, sortDictionary.size() - 1);
+		sortDictionary.sort(Comparator.comparing(MyString::getScore).reversed());
 		/*
 		//debug用にoutputStreamに書き込み
 		try {
@@ -167,7 +168,7 @@ public class Anagram {
 			}
 		}
 	}
-
+	/*
 	static void scoreQuickSort(List<MyString> target, int left, int right) {
 		int i, j;
 		int pivot;
@@ -190,4 +191,5 @@ public class Anagram {
 		scoreQuickSort(target, left, j);
 		scoreQuickSort(target, i, right);
 	}
+	*/
 }

@@ -47,4 +47,9 @@ public class MyString {
 		}
 		return score;
 	}
+
+	//ソート用にgetterを準備
+	int getScore() {
+		return this.score;
+	}
 }
