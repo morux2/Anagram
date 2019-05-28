@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class Anagram {
 	//アルファベットを並び替えた辞書
-	static List<MyString> sortDictionary = new ArrayList<MyString>();
+	static List<MyString> sortDictionary = new ArrayList<>();
 	//問題の組み合わせをListで表現
 	static List<MyString> questions = new ArrayList<>();
 
